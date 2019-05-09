@@ -20,7 +20,7 @@ jobs:
           PARAMETERS+="MySQLPass=$MYSQL_PASS "
           PARAMETERS+="KeycloakUser=$KEYCLOAK_USER "
           PARAMETERS+="KeycloakPassword=$KEYCLOAK_PASSWORD "
-          PARAMETERS+="KeycloakImage=$AWS_ECR_ACCOUNT_URL/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BUILD_NUM "
+          PARAMETERS+="KeycloakImage=$AWS_ECR_ACCOUNT_URL/$IMAGE_NAME:$CIRCLE_BUILD_NUM "
 
           mkdir workspace
           aws cloudformation deploy --stack-name $STACK_NAME --no-execute-changeset --capabilities CAPABILITY_IAM --template-file template.yml --parameter-overrides $PARAMETERS | tee workspace/changeset.txt
@@ -63,7 +63,7 @@ workflows:
       - aws-ecr/build_and_push_image:
           region: ${AWS_REGION}
           account-url: ${AWS_ECR_ACCOUNT_URL}
-          repo: ${CIRCLE_PROJECT_REPONAME}
+          repo: ${IMAGE_NAME}
           tag: ${CIRCLE_BUILD_NUM}
           filters:
             branches:
