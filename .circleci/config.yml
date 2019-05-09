@@ -65,12 +65,10 @@ workflows:
           account-url: ${AWS_ECR_ACCOUNT_URL}
           repo: ${CIRCLE_PROJECT_REPONAME}
           tag: ${CIRCLE_BUILD_NUM}
-          requires:
-              - reviewChangeSet
-            filters:
-              branches:
-                only:
-                  - master
+          filters:
+            branches:
+              only:
+                - master
       - createChangeSet
       - reviewChangeSet:
           type: approval
