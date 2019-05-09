@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  CoreStack:
+    Type: String
+  KeycloakImage:
+    Type: String
+  KeycloakPassword:
+    Type: String
+  KeycloakUser:
+    Type: String
+  MySQLDbName:
+    Type: String
+  MySQLPass:
+    Type: String
+  MySQLUser:
+    Type: String
+Resources:
+  KeycloakListenerRule:
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'KeycloakTargetGroup'
+          Type: forward
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - /auth
+            - /auth*
+      ListenerArn: !ImportValue
+        Fn::Sub: ${CoreStack}-ALB-Web-Listener
+      Priority: 10
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+  KeycloakSecurityGroup:
+    Properties:
+      GroupDescription: Keycloak Service SG
+      SecurityGroupIngress:
+        - FromPort: 8080
+          IpProtocol: tcp
+          SourceSecurityGroupId: !ImportValue
+            Fn::Sub: ${CoreStack}-LoadBalancer-SG-ID
+          ToPort: 8080
+      VpcId: !ImportValue
+        Fn::Sub: ${CoreStack}-VPC-ID
+    Type: AWS::EC2::SecurityGroup
+  KeycloakService:
+    Properties:
+      Cluster: !ImportValue
+        Fn::Sub: ${CoreStack}-ECS-Cluster
+      DesiredCount: 1
+      LoadBalancers:
+        - ContainerPort: 8080
+          TargetGroupArn: !Ref 'KeycloakTargetGroup'
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !ImportValue
+              Fn::Sub: ${CoreStack}-RDS-Access-SG-ID
+          Subnets:
+            - !ImportValue
+              Fn::Sub: ${CoreStack}-SubnetID
+      TaskDefinition: !Ref 'KeycloakTask'
+    Type: AWS::ECS::Service
+  KeycloakTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+  KeycloakTask:
+    Properties:
+      ContainerDefinitions:
+        - Environment:
+            - Name: KEYCLOAK_USER
+              Value: !Ref 'KeycloakUser'
+            - Name: KEYCLOAK_PASSWORD
+              Value: !Ref 'KeycloakImage'
+            - Name: DB_VENDOR
+              Value: mysql
+            - Name: DB_ADDR
+              Value: !ImportValue
+                Fn::Sub: ${CoreStack}-MySQL-Address
+            - Name: DB_PORT
+              Value: !ImportValue
+                Fn::Sub: ${CoreStack}-MySQL-Port
+            - Name: DB_DATABASE
+              Value: !Ref 'MySQLDbName'
+            - Name: DB_USER
+              Value: !Ref 'MySQLUser'
+            - Name: DB_PASSWORD
+              Value: !Ref 'MySQLPass'
+          HealthCheck:
+            Command:
+              - /bin/bash -c "curl -f http://localhost:8080/auth/realms/main || exit
+                1"
+            StartPeriod: 60
+          Image: !Ref 'KeycloakImage'
+          MemoryReservation: '512'
+          Name: keycloak
+          PortMappings:
+            - ContainerPort: 8080
+      NetworkMode: awsvpc
+    Type: AWS::ECS::TaskDefinition
+Transform: AWS::Serverless-2016-10-31

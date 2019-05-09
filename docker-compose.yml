@@ -8,18 +8,23 @@ services:
     environment:
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: test
-      KEYCLOAK_DEFAULT_THEME: tradelead
       DB_VENDOR: mysql
       DB_ADDR: mysql
       DB_DATABASE: keycloak
       DB_USER: root
       DB_PASSWORD: keycloak
-      KEYCLOAK_IMPORT: /tmp/tradelead-realm.json
+    depends_on:
+      mysql:
+        condition: service_healthy
   mysql:
     image: mysql:5.6
     volumes:
-      - ./data/mysql:/var/lib/mysql
+      - ./data/mysql-v2:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: keycloak
       MYSQL_DATABASE: keycloak
+    healthcheck:
+      test: '/usr/bin/mysql --user=root --password=keycloak --execute "SHOW DATABASES";'
+      interval: 10s
+      retries: 12
       

@@ -1,0 +1,96 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@0.1.13
+  aws-ecr: circleci/aws-ecr@0.0.4
+
+jobs:
+  createChangeSet:
+    docker:
+      - image: circleci/buildpack-deps:jessie
+    steps:
+      - checkout
+      - run: |
+          sudo apt-get install python-dev
+      - aws-cli/install
+      - run: |
+          PARAMETERS="CoreStack=$CORE_STACK "
+          PARAMETERS+="MySQLDbName=$MYSQL_DB_NAME "
+          PARAMETERS+="MySQLUser=$MYSQL_USER "
+          PARAMETERS+="MySQLPass=$MYSQL_PASS "
+          PARAMETERS+="KeycloakUser=$KEYCLOAK_USER "
+          PARAMETERS+="KeycloakPassword=$KEYCLOAK_PASSWORD "
+          PARAMETERS+="KeycloakImage=$AWS_ECR_ACCOUNT_URL/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BUILD_NUM "
+
+          mkdir workspace
+          aws cloudformation deploy --stack-name $STACK_NAME --no-execute-changeset --capabilities CAPABILITY_IAM --template-file template.yml --parameter-overrides $PARAMETERS | tee workspace/changeset.txt
+          CHANGE_SET_NAME=$(grep -o "arn:aws:cloudformation.*" workspace/changeset.txt)
+          echo $CHANGE_SET_NAME >> workspace/changesetname.txt
+          echo $CHANGE_SET_NAME
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - changesetname.txt
+  executeChangeSet:
+    docker:
+      - image: circleci/buildpack-deps:jessie
+    steps:
+      - attach_workspace:
+          at: workspace
+      - run: |
+          sudo apt-get install python-dev
+      - aws-cli/install
+      - run: |
+          CHANGE_SET_NAME=$(cat workspace/changesetname.txt)
+          aws cloudformation execute-change-set --change-set-name $CHANGE_SET_NAME
+          aws cloudformation wait stack-update-complete --stack-name $STACK_NAME
+  deleteChangeSet:
+    docker:
+      - image: circleci/buildpack-deps:jessie
+    steps:
+      - attach_workspace:
+          at: workspace
+      - run: |
+          sudo apt-get install python-dev
+      - aws-cli/install
+      - run: |
+          CHANGE_SET_NAME=$(cat workspace/changesetname.txt)
+          aws cloudformation delete-change-set --change-set-name $CHANGE_SET_NAME
+        
+workflows:
+  changeset_review_execute:
+    jobs:
+      - aws-ecr/build_and_push_image:
+          region: ${AWS_REGION}
+          account-url: ${AWS_ECR_ACCOUNT_URL}
+          repo: ${CIRCLE_PROJECT_REPONAME}
+          tag: ${CIRCLE_BUILD_NUM}
+          requires:
+              - reviewChangeSet
+            filters:
+              branches:
+                only:
+                  - master
+      - createChangeSet
+      - reviewChangeSet:
+          type: approval
+          requires:
+            - createChangeSet
+          filters:
+            branches:
+              only:
+                - master
+      - executeChangeSet:
+          requires:
+            - reviewChangeSet
+          filters:
+            branches:
+              only:
+                - master
+      - deleteChangeSet:
+          requires:
+            - createChangeSet
+          filters:
+            branches:
+              ignore:
+                - master
