@@ -17,7 +17,12 @@ t.add_parameter(Parameter('KeycloakPassword', Type='String'))
 t.add_parameter(Parameter('KeycloakImage', Type='String'))
 
 # ECS
-keycloakTargetGroup = t.add_resource(elasticloadbalancingv2.TargetGroup('KeycloakTargetGroup'))
+keycloakTargetGroup = t.add_resource(elasticloadbalancingv2.TargetGroup(
+    'KeycloakTargetGroup',
+    Port = '80',
+    Protocol = 'HTTP',
+    VpcId = ImportValue(Sub('${CoreStack}-VPC-ID')),
+))
 
 keycloakListenerRule = t.add_resource(elasticloadbalancingv2.ListenerRule(
     'KeycloakListenerRule',

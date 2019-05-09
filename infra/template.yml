@@ -60,6 +60,11 @@ Resources:
       TaskDefinition: !Ref 'KeycloakTask'
     Type: AWS::ECS::Service
   KeycloakTargetGroup:
+    Properties:
+      Port: '80'
+      Protocol: HTTP
+      VpcId: !ImportValue
+        Fn::Sub: ${CoreStack}-VPC-ID
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
   KeycloakTask:
     Properties:
