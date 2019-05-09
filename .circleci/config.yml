@@ -23,7 +23,7 @@ jobs:
           PARAMETERS+="KeycloakImage=$AWS_ECR_ACCOUNT_URL/$IMAGE_NAME:$CIRCLE_BUILD_NUM "
 
           mkdir workspace
-          aws cloudformation deploy --stack-name $STACK_NAME --no-execute-changeset --capabilities CAPABILITY_IAM --template-file template.yml --parameter-overrides $PARAMETERS | tee workspace/changeset.txt
+          aws cloudformation deploy --stack-name $STACK_NAME --no-execute-changeset --capabilities CAPABILITY_IAM --template-file infra/template.yml --parameter-overrides $PARAMETERS | tee workspace/changeset.txt
           CHANGE_SET_NAME=$(grep -o "arn:aws:cloudformation.*" workspace/changeset.txt)
           echo $CHANGE_SET_NAME >> workspace/changesetname.txt
           echo $CHANGE_SET_NAME
