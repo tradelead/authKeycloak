@@ -70,6 +70,8 @@ workflows:
               only:
                 - master
       - createChangeSet
+          requires:
+            - aws-ecr/build_and_push_image
       - reviewChangeSet:
           type: approval
           requires:
