@@ -84,6 +84,7 @@ keycloakService = t.add_resource(ecs.Service(
     TaskDefinition = keycloakTask.Ref(),
     DesiredCount = 1,
     LoadBalancers = [ecs.LoadBalancer(
+        ContainerName = 'keycloak',
         ContainerPort = 8080,
         TargetGroupArn = keycloakTargetGroup.Ref(),
     )],

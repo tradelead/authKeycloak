@@ -47,7 +47,8 @@ Resources:
         Fn::Sub: ${CoreStack}-ECS-Cluster
       DesiredCount: 1
       LoadBalancers:
-        - ContainerPort: 8080
+        - ContainerName: keycloak
+          ContainerPort: 8080
           TargetGroupArn: !Ref 'KeycloakTargetGroup'
       NetworkConfiguration:
         AwsvpcConfiguration:
