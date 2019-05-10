@@ -96,6 +96,8 @@ Resources:
               Value: !Ref 'MySQLUser'
             - Name: DB_PASSWORD
               Value: !Ref 'MySQLPass'
+            - Name: PROXY_ADDRESS_FORWARDING
+              Value: 'true'
           Image: !Ref 'KeycloakImage'
           LogConfiguration:
             LogDriver: awslogs
