@@ -92,7 +92,8 @@ keycloakService = t.add_resource(ecs.Service(
     NetworkConfiguration = ecs.NetworkConfiguration(
         AwsvpcConfiguration = ecs.AwsvpcConfiguration(
             SecurityGroups=[
-                ImportValue(Sub('${CoreStack}-RDS-Access-SG-ID')), 
+                ImportValue(Sub('${CoreStack}-RDS-Access-SG-ID')),
+                keycloakServiceSG.GetAtt('GroupId'),
             ],
             Subnets=[ImportValue(Sub('${CoreStack}-SubnetID'))],
         ),

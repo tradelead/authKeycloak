@@ -55,6 +55,7 @@ Resources:
           SecurityGroups:
             - !ImportValue
               Fn::Sub: ${CoreStack}-RDS-Access-SG-ID
+            - !GetAtt 'KeycloakSecurityGroup.GroupId'
           Subnets:
             - !ImportValue
               Fn::Sub: ${CoreStack}-SubnetID

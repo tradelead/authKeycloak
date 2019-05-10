@@ -20,7 +20,7 @@ jobs:
           PARAMETERS+="MySQLPass=$MYSQL_PASS "
           PARAMETERS+="KeycloakUser=$KEYCLOAK_USER "
           PARAMETERS+="KeycloakPassword=$KEYCLOAK_PASSWORD "
-          PARAMETERS+="KeycloakImage=$AWS_ECR_ACCOUNT_URL/$IMAGE_NAME:$CIRCLE_BUILD_NUM "
+          PARAMETERS+="KeycloakImage=$AWS_ECR_ACCOUNT_URL/$IMAGE_NAME:$CIRCLE_SHA1 "
 
           mkdir workspace
           aws cloudformation deploy --stack-name $STACK_NAME --no-execute-changeset --capabilities CAPABILITY_IAM --template-file infra/template.yml --parameter-overrides $PARAMETERS | tee workspace/changeset.txt
@@ -43,7 +43,6 @@ jobs:
       - run: |
           CHANGE_SET_NAME=$(cat workspace/changesetname.txt)
           aws cloudformation execute-change-set --change-set-name $CHANGE_SET_NAME
-          aws cloudformation wait stack-update-complete --stack-name $STACK_NAME
   deleteChangeSet:
     docker:
       - image: circleci/buildpack-deps:jessie
@@ -64,7 +63,7 @@ workflows:
           region: ${AWS_REGION}
           account-url: ${AWS_ECR_ACCOUNT_URL}
           repo: ${IMAGE_NAME}
-          tag: ${CIRCLE_BUILD_NUM}
+          tag: ${CIRCLE_SHA1}
           filters:
             branches:
               only:
