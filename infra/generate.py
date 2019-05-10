@@ -22,6 +22,7 @@ keycloakTargetGroup = t.add_resource(elasticloadbalancingv2.TargetGroup(
     Port = '80',
     Protocol = 'HTTP',
     VpcId = ImportValue(Sub('${CoreStack}-VPC-ID')),
+    TargetType = 'ip',
 ))
 
 keycloakListenerRule = t.add_resource(elasticloadbalancingv2.ListenerRule(

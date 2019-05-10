@@ -64,6 +64,7 @@ Resources:
     Properties:
       Port: '80'
       Protocol: HTTP
+      TargetType: ip
       VpcId: !ImportValue
         Fn::Sub: ${CoreStack}-VPC-ID
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
