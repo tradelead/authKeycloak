@@ -96,13 +96,6 @@ Resources:
               Value: !Ref 'MySQLUser'
             - Name: DB_PASSWORD
               Value: !Ref 'MySQLPass'
-          HealthCheck:
-            Command:
-              - /bin/bash -c "curl -f http://localhost:8080/auth/realms/main || exit
-                1"
-            Interval: 60
-            Retries: 10
-            StartPeriod: 120
           Image: !Ref 'KeycloakImage'
           LogConfiguration:
             LogDriver: awslogs

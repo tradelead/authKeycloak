@@ -64,12 +64,6 @@ keycloakTask = t.add_resource(ecs.TaskDefinition(
         PortMappings = [ecs.PortMapping(
             ContainerPort = 8080,
         )],
-        HealthCheck = ecs.HealthCheck(
-            Command = ['/bin/bash -c "curl -f http://localhost:8080/auth/realms/main || exit 1"'],
-            StartPeriod = 120,
-            Retries = 10,
-            Interval = 60,
-        ),
         LogConfiguration = ecs.LogConfiguration(
             LogDriver = 'awslogs',
             Options = {
