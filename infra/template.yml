@@ -81,7 +81,7 @@ Resources:
             - Name: KEYCLOAK_USER
               Value: !Ref 'KeycloakUser'
             - Name: KEYCLOAK_PASSWORD
-              Value: !Ref 'KeycloakImage'
+              Value: !Ref 'KeycloakPassword'
             - Name: DB_VENDOR
               Value: mysql
             - Name: DB_ADDR

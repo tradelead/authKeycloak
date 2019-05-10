@@ -52,7 +52,7 @@ keycloakTask = t.add_resource(ecs.TaskDefinition(
         Image = Ref('KeycloakImage'),
         Environment = [
             ecs.Environment(Name = 'KEYCLOAK_USER', Value = Ref('KeycloakUser')),
-            ecs.Environment(Name = 'KEYCLOAK_PASSWORD', Value = Ref('KeycloakImage')),
+            ecs.Environment(Name = 'KEYCLOAK_PASSWORD', Value = Ref('KeycloakPassword')),
             ecs.Environment(Name = 'DB_VENDOR', Value = 'mysql'),
             ecs.Environment(Name = 'DB_ADDR', Value = ImportValue(Sub('${CoreStack}-MySQL-Address'))),
             ecs.Environment(Name = 'DB_PORT', Value = ImportValue(Sub('${CoreStack}-MySQL-Port'))),
