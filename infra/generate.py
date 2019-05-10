@@ -23,6 +23,11 @@ keycloakTargetGroup = t.add_resource(elasticloadbalancingv2.TargetGroup(
     Protocol = 'HTTP',
     VpcId = ImportValue(Sub('${CoreStack}-VPC-ID')),
     TargetType = 'ip',
+    HealthCheckPath = '/auth/realms/main',
+    HealthCheckProtocol = 'HTTP',
+    HealthCheckIntervalSeconds = 240,
+    HealthyThresholdCount = 5,
+    UnhealthyThresholdCount = 5,
 ))
 
 keycloakListenerRule = t.add_resource(elasticloadbalancingv2.ListenerRule(
@@ -61,7 +66,17 @@ keycloakTask = t.add_resource(ecs.TaskDefinition(
         )],
         HealthCheck = ecs.HealthCheck(
             Command = ['/bin/bash -c "curl -f http://localhost:8080/auth/realms/main || exit 1"'],
-            StartPeriod = 60,
+            StartPeriod = 120,
+            Retries = 10,
+            Interval = 60,
+        ),
+        LogConfiguration = ecs.LogConfiguration(
+            LogDriver = 'awslogs',
+            Options = {
+                "awslogs-group": Sub('${AWS::StackName}-KeycloakTask'),
+                "awslogs-region": Ref("AWS::Region"),
+                "awslogs-stream-prefix": "ecs",
+            },
         ),
     )],
     NetworkMode = 'awsvpc',

@@ -63,9 +63,14 @@ Resources:
     Type: AWS::ECS::Service
   KeycloakTargetGroup:
     Properties:
+      HealthCheckIntervalSeconds: 240
+      HealthCheckPath: /auth/realms/main
+      HealthCheckProtocol: HTTP
+      HealthyThresholdCount: 5
       Port: '80'
       Protocol: HTTP
       TargetType: ip
+      UnhealthyThresholdCount: 5
       VpcId: !ImportValue
         Fn::Sub: ${CoreStack}-VPC-ID
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -95,8 +100,16 @@ Resources:
             Command:
               - /bin/bash -c "curl -f http://localhost:8080/auth/realms/main || exit
                 1"
-            StartPeriod: 60
+            Interval: 60
+            Retries: 10
+            StartPeriod: 120
           Image: !Ref 'KeycloakImage'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub '${AWS::StackName}-KeycloakTask'
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-stream-prefix: ecs
           MemoryReservation: '512'
           Name: keycloak
           PortMappings:
