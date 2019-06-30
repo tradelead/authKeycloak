@@ -23,6 +23,11 @@ keycloakTargetGroup = t.add_resource(elasticloadbalancingv2.TargetGroup(
     Protocol = 'HTTP',
     VpcId = ImportValue(Sub('${CoreStack}-VPC-ID')),
     TargetType = 'ip',
+    HealthCheckPath = '/auth/realms/main',
+    HealthCheckProtocol = 'HTTP',
+    HealthCheckIntervalSeconds = 240,
+    HealthyThresholdCount = 5,
+    UnhealthyThresholdCount = 5,
 ))
 
 keycloakListenerRule = t.add_resource(elasticloadbalancingv2.ListenerRule(
@@ -47,7 +52,7 @@ keycloakTask = t.add_resource(ecs.TaskDefinition(
         Image = Ref('KeycloakImage'),
         Environment = [
             ecs.Environment(Name = 'KEYCLOAK_USER', Value = Ref('KeycloakUser')),
-            ecs.Environment(Name = 'KEYCLOAK_PASSWORD', Value = Ref('KeycloakImage')),
+            ecs.Environment(Name = 'KEYCLOAK_PASSWORD', Value = Ref('KeycloakPassword')),
             ecs.Environment(Name = 'DB_VENDOR', Value = 'mysql'),
             ecs.Environment(Name = 'DB_ADDR', Value = ImportValue(Sub('${CoreStack}-MySQL-Address'))),
             ecs.Environment(Name = 'DB_PORT', Value = ImportValue(Sub('${CoreStack}-MySQL-Port'))),
@@ -60,9 +65,13 @@ keycloakTask = t.add_resource(ecs.TaskDefinition(
         PortMappings = [ecs.PortMapping(
             ContainerPort = 8080,
         )],
-        HealthCheck = ecs.HealthCheck(
-            Command = ['/bin/bash -c "curl -f http://localhost:8080/auth/realms/main || exit 1"'],
-            StartPeriod = 60,
+        LogConfiguration = ecs.LogConfiguration(
+            LogDriver = 'awslogs',
+            Options = {
+                "awslogs-group": Sub('${AWS::StackName}-KeycloakTask'),
+                "awslogs-region": Ref("AWS::Region"),
+                "awslogs-stream-prefix": "ecs",
+            },
         ),
     )],
     NetworkMode = 'awsvpc',
