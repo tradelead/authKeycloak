@@ -54,6 +54,7 @@ keycloakTask = t.add_resource(ecs.TaskDefinition(
             ecs.Environment(Name = 'DB_DATABASE', Value = Ref('MySQLDbName')),
             ecs.Environment(Name = 'DB_USER', Value = Ref('MySQLUser')),
             ecs.Environment(Name = 'DB_PASSWORD', Value = Ref('MySQLPass')),
+            ecs.Environment(Name = 'PROXY_ADDRESS_FORWARDING', Value = 'true'),
         ],
         MemoryReservation = '512',
         PortMappings = [ecs.PortMapping(

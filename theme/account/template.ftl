@@ -25,7 +25,7 @@
         <nav class="navbar" role="navigation">
             <div class="navbar-header">
                 <div class="container logo_heading">
-                    <img src="http://localhost:8080/auth/resources/6.0.1/login/tradelead/img/tradelead-logo.svg" alt="tradelead">
+                    <img src="${url.resourcesPath}/img/tradelead-logo.svg" alt="tradelead">
                     <h1 class="navbar-title">Authentication Settings</h1>
                 </div>
             </div>
